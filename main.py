@@ -1,13 +1,13 @@
 import tkinter
 from tkinter import *
 import math
-from functools import partial
+import json
+from datetime import datetime
 
 # ---------------------------- CONSTANTS ------------------------------- #
 from tkinter import ttk
 
 FONT_NAME = "Courier"
-
 reps = 0
 timer = None
 color_options = [
@@ -70,6 +70,7 @@ def start_timer():
         title_text.config(text="Long Break", fg=selected_theme["long"])
         count_down(long_break_sec)
     elif reps % 2 == 0:
+        save_session_stamp()
         title_text.config(text="Short Break", fg=selected_theme["short"])
         count_down(short_break_sec)
     else:
@@ -91,11 +92,10 @@ def count_down(count):
         timer = window.after(1000, count_down, count - 1)
     else:
         global reps
+        num_sessions = math.floor(reps / 2)
         checkmark = "✓"
         checks = ""
-        num_sessions = math.floor(reps / 2)
         if num_sessions % 2 == 0:
-            print("hi")
             start_timer()
         else:
             title_text.config(text="Press Start whenever\nyou're ready for another.", fg=selected_theme["long"])
@@ -103,15 +103,47 @@ def count_down(count):
             checks += checkmark
             check_mark.config(text=f"Sessions:\n {checks}")
 
+# ---------------------------- COUNTDOWN MECHANISM ------------------------------- #
+
+def save_session_stamp():
+    global reps
+    num_sessions = math.floor(reps / 2)
+    date = datetime.now()
+    today = date.strftime("%y-%m-%d")
+    current_time = date.strftime("%H:%M")
+    session_key = f"Session {num_sessions}"
+    session_value = current_time
+    day_start_entry = {
+        today: {
+            session_key: session_value
+        }
+    }
+    single_entry = {session_key: session_value}
+
+    try:
+        with open("study_data.json", "r") as study_data_file:
+            # include if statement to check if today is in that file.
+            print("There's a file, reading json")
+            data = json.load(study_data_file)
+            today_data = data[today]
+    except FileNotFoundError:
+        with open("study_data.json", "w") as study_data_file:
+            json.dump(day_start_entry, study_data_file, indent=4)
+    else:
+        today_data.update(single_entry)
+        with open("study_data.json", "w") as study_data_file:
+            json.dump(data, study_data_file, indent=4)
+
+
 
 # ---------------------------- UI SETUP ------------------------------- #
-
 
 selected_theme = default
 window = Tk()
 window.title("My Pomodoro")
 window.config(padx=100, pady=50, bg=selected_theme["bg"])
 # window.maxsize(width=650, height=450)
+
 
 
 # title_frame = tkinter.Frame(window, bg=selected_theme["bg"], height=10, width=50)
