@@ -136,19 +136,19 @@ def save_session_stamp():
     single_entry = {session_key: session_value}
 
     try:
-        with open("study_data.json", "r") as study_data_file:
+        with open("venv/study_data.json", "r") as study_data_file:
             # include if statement to check if today is in that file.
             data = json.load(study_data_file)
 
     except FileNotFoundError:
-        with open("study_data.json", "w") as study_data_file:
+        with open("venv/study_data.json", "w") as study_data_file:
             json.dump(day_start_entry, study_data_file, indent=4)
     else:
         if today not in data:
             data.update(day_start_entry)
         today_data = data[today]
         today_data.update(single_entry)
-        with open("study_data.json", "w") as study_data_file:
+        with open("venv/study_data.json", "w") as study_data_file:
             json.dump(data, study_data_file, indent=4)
 
 
