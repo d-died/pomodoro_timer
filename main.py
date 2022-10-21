@@ -5,7 +5,6 @@ import json
 from datetime import datetime
 
 # ---------------------------- CONSTANTS ------------------------------- #
-from tkinter import ttk
 
 FONT_NAME = "Courier"
 reps = 0
@@ -30,6 +29,8 @@ long_timer_settings = {"work": 0.5, "short": 0.5, "long": 0.5}
 # ---------------------------- CHANGE COLOR THEME ------------------------------- #
 
 index = 0
+
+
 def change_colors():
     global index, selected_theme
     if index <= 2:
@@ -44,6 +45,7 @@ def change_colors():
     reset_button.config(highlightbackground=selected_theme["bg"])
     check_mark.config(fg=selected_theme["work"], bg=selected_theme["bg"])
     color_change.config(highlightbackground=selected_theme["bg"])
+
 
 # ---------------------------- TIMER RESET ------------------------------- #
 
@@ -68,12 +70,15 @@ def start_timer():
 
     if reps % 8 == 0:
         title_text.config(text="Long Break", fg=selected_theme["long"])
+        canvas.itemconfig(tomato, image=splat_pic)
         count_down(long_break_sec)
     elif reps % 2 == 0:
         save_session_stamp()
         title_text.config(text="Short Break", fg=selected_theme["short"])
+        canvas.itemconfig(tomato, image=splat_pic)
         count_down(short_break_sec)
     else:
+        canvas.itemconfig(tomato, image=tomato_pic)
         title_text.config(text="Work, Bitch!", fg=selected_theme["work"])
         count_down(work_sec)
 
@@ -82,6 +87,8 @@ def start_timer():
 
 def count_down(count):
     count_min = math.floor(count / 60)
+    if count_min < 10:
+        count_min = f"0{count_min}"
     count_sec = count % 60
     if count_sec < 10:
         count_sec = f"0{count_sec}"
@@ -95,13 +102,21 @@ def count_down(count):
         num_sessions = math.floor(reps / 2)
         checkmark = "✓"
         checks = ""
-        if num_sessions % 2 == 0:
+        if reps % 2 != 0:
             start_timer()
         else:
-            title_text.config(text="Press Start whenever\nyou're ready for another.", fg=selected_theme["long"])
+            if num_sessions % 3 == 0:
+                title_text.config(text="Last session before a long break.\nYou got this!\nPress start when you're "
+                                       "ready.", fg=selected_theme["long"])
+            elif num_sessions % 4 == 0:
+                title_text.config(text="Get back to it.\nPress start when you're ready.", fg=selected_theme["long"])
+            else:
+
+                title_text.config(text="Press start when you're ready.", fg=selected_theme["long"])
         for n in range(num_sessions):
             checks += checkmark
             check_mark.config(text=f"Sessions:\n {checks}")
+
 
 # ---------------------------- COUNTDOWN MECHANISM ------------------------------- #
 
@@ -123,17 +138,18 @@ def save_session_stamp():
     try:
         with open("study_data.json", "r") as study_data_file:
             # include if statement to check if today is in that file.
-            print("There's a file, reading json")
             data = json.load(study_data_file)
-            today_data = data[today]
+
     except FileNotFoundError:
         with open("study_data.json", "w") as study_data_file:
             json.dump(day_start_entry, study_data_file, indent=4)
     else:
+        if today not in data:
+            data.update(day_start_entry)
+        today_data = data[today]
         today_data.update(single_entry)
         with open("study_data.json", "w") as study_data_file:
             json.dump(data, study_data_file, indent=4)
-
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -145,7 +161,6 @@ window.config(padx=100, pady=50, bg=selected_theme["bg"])
 # window.maxsize(width=650, height=450)
 
 
-
 # title_frame = tkinter.Frame(window, bg=selected_theme["bg"], height=10, width=50)
 title_text = Label(text="Timer", font=(FONT_NAME, 50), fg=selected_theme["work"], bg=selected_theme["bg"])
 title_text.grid(row=0, column=1, sticky=EW)
@@ -153,7 +168,8 @@ title_text.grid(row=0, column=1, sticky=EW)
 # content_frame = tkinter.Frame(window)
 canvas = Canvas(width=200, height=224, bg=selected_theme["bg"], highlightthickness=0)
 tomato_pic = PhotoImage(file="tomato.png")
-canvas.create_image(100, 112, image=tomato_pic)
+splat_pic = PhotoImage(file="splat.png")
+tomato = canvas.create_image(100, 112, image=tomato_pic)
 timer_text = canvas.create_text(100, 130, text="00:00", fill="white", font=(FONT_NAME, 35, "bold"))
 canvas.grid(column=1, row=1)
 
