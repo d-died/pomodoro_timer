@@ -65,16 +65,16 @@ def reset_timer():
 def start_timer():
     global reps
     work_sec = 15
-    short_break_sec = 5
+    short_break_sec = 15
     long_break_sec = 5
     reps += 1
-    work_end()
 
     if reps % 8 == 0:
         title_text.config(text="Long Break", fg=selected_theme["long"])
         canvas.itemconfig(tomato, image=splat_pic)
         count_down(long_break_sec)
     elif reps % 2 == 0:
+        work_end()
         save_session_stamp()
         title_text.config(text="Short Break", fg=selected_theme["short"])
         canvas.itemconfig(tomato, image=splat_pic)
@@ -113,7 +113,7 @@ def count_down(count):
             elif num_sessions % 4 == 0:
                 title_text.config(text="Get back to it.\nPress start when you're ready.", fg=selected_theme["long"])
             else:
-
+                break_end()
                 title_text.config(text="Press start when you're ready.", fg=selected_theme["long"])
         for n in range(num_sessions):
             checks += checkmark
@@ -156,12 +156,15 @@ def save_session_stamp():
 # ---------------------------- SOUNDS FUNCTIONS------------------------------- #
 pygame.mixer.init()
 
+def break_end():
+    train_station = pygame.mixer.Sound(file="sounds/train_station.wav")
+    train_station.play(loops=1)
+
 def work_end():
     gong_one = pygame.mixer.Sound(file="sounds/low a gong.wav")
     gong_two = pygame.mixer.Sound(file="sounds/low gong.wav")
     gong_one.play(loops=2)
     gong_two.play(loops=1)
-    # bowl.play()
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -179,8 +182,8 @@ title_text.grid(row=0, column=1, sticky=EW)
 
 # content_frame = tkinter.Frame(window)
 canvas = Canvas(width=200, height=224, bg=selected_theme["bg"], highlightthickness=0)
-tomato_pic = PhotoImage(file="tomato.png")
-splat_pic = PhotoImage(file="splat.png")
+tomato_pic = PhotoImage(file="pics/tomato.png")
+splat_pic = PhotoImage(file="pics/splat.png")
 tomato = canvas.create_image(100, 112, image=tomato_pic)
 timer_text = canvas.create_text(100, 130, text="00:00", fill="white", font=(FONT_NAME, 35, "bold"))
 canvas.grid(column=1, row=1)
