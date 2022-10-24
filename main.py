@@ -3,6 +3,7 @@ from tkinter import *
 import math
 import json
 from datetime import datetime
+import pygame
 
 # ---------------------------- CONSTANTS ------------------------------- #
 
@@ -118,7 +119,7 @@ def count_down(count):
             check_mark.config(text=f"Sessions:\n {checks}")
 
 
-# ---------------------------- COUNTDOWN MECHANISM ------------------------------- #
+# ---------------------------- SAVE SESSION DATA ------------------------------- #
 
 def save_session_stamp():
     global reps
@@ -137,7 +138,6 @@ def save_session_stamp():
 
     try:
         with open("venv/study_data.json", "r") as study_data_file:
-            # include if statement to check if today is in that file.
             data = json.load(study_data_file)
 
     except FileNotFoundError:
@@ -151,6 +151,11 @@ def save_session_stamp():
         with open("venv/study_data.json", "w") as study_data_file:
             json.dump(data, study_data_file, indent=4)
 
+
+# ---------------------------- SOUNDS FUNCTIONS------------------------------- #
+pygame.mixer.init()
+
+def work_end():
 
 # ---------------------------- UI SETUP ------------------------------- #
 
