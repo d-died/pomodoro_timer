@@ -64,10 +64,11 @@ def reset_timer():
 
 def start_timer():
     global reps
-    work_sec = 5
+    work_sec = 15
     short_break_sec = 5
     long_break_sec = 5
     reps += 1
+    work_end()
 
     if reps % 8 == 0:
         title_text.config(text="Long Break", fg=selected_theme["long"])
@@ -156,6 +157,12 @@ def save_session_stamp():
 pygame.mixer.init()
 
 def work_end():
+    gong_one = pygame.mixer.Sound(file="sounds/low a gong.wav")
+    gong_two = pygame.mixer.Sound(file="sounds/low gong.wav")
+    gong_one.play(loops=2)
+    gong_two.play(loops=1)
+    # bowl.play()
+
 
 # ---------------------------- UI SETUP ------------------------------- #
 
