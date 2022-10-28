@@ -71,6 +71,7 @@ def start_timer():
     reps += 1
 
     if reps % 8 == 0:
+        work_end()
         title_text.config(text="Long Break", fg=selected_theme["long"])
         canvas.itemconfig(tomato, image=splat_pic)
         count_down(long_break_sec)
