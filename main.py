@@ -57,6 +57,7 @@ def reset_timer():
     reps = 0
     title_text.config(text="Timer")
     canvas.itemconfig(timer_text, text="00:00")
+    canvas.itemconfig(tomato, image=tomato_pic)
     window.after_cancel(timer)
 
 
@@ -64,9 +65,9 @@ def reset_timer():
 
 def start_timer():
     global reps
-    work_sec = 15
-    short_break_sec = 15
-    long_break_sec = 5
+    work_sec = 25 * 60
+    short_break_sec = 5 * 60
+    long_break_sec = 30 * 60
     reps += 1
 
     if reps % 8 == 0:
@@ -108,6 +109,7 @@ def count_down(count):
             start_timer()
         else:
             if num_sessions % 3 == 0:
+                break_end()
                 title_text.config(text="Last session before a long break.\nYou got this!\nPress start when you're "
                                        "ready.", fg=selected_theme["long"])
             elif num_sessions % 4 == 0:
