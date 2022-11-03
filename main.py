@@ -83,7 +83,7 @@ def start_timer():
         count_down(short_break_sec)
     else:
         canvas.itemconfig(tomato, image=tomato_pic)
-        title_text.config(text="Work, Bitch!", fg=selected_theme["work"])
+        title_text.config(text="Work, Bitch!", fg=selected_theme["work"], font=(FONT_NAME, 30, "bold"))
         count_down(work_sec)
 
 
