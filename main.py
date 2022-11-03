@@ -1,4 +1,3 @@
-import tkinter
 from tkinter import *
 import math
 import json
@@ -11,7 +10,7 @@ FONT_NAME = "Courier"
 reps = 0
 timer = None
 TIMER_LEFT = None
-WORK_SEC = 25 * 60
+WORK_SEC = 5
 SHORT_BREAK_SEC = 5 * 60
 LONG_BREAK_SEC = 30 * 60
 COLOR_OPTIONS = [
@@ -20,7 +19,7 @@ COLOR_OPTIONS = [
     {"d_faves": {"bg": "#601ba2", "work": "#35ea4D", "short": "#9fd329", "long": "#d9d2e9"}},
     {"desert": {"bg": "#d8a300", "work": "#ef8552", "short": "#6aa84f", "long": "#9fc5e8"}}
 ]
-
+color_index = 0
 default = COLOR_OPTIONS[0]["default"]
 dark_mode = COLOR_OPTIONS[1]["dark_mode"]
 d_faves = COLOR_OPTIONS[2]["d_faves"]
@@ -31,8 +30,6 @@ state = False
 
 
 # ---------------------------- CHANGE COLOR THEME ------------------------------- #
-
-color_index = 0
 
 
 def change_colors():
@@ -46,6 +43,7 @@ def change_colors():
     canvas.config(bg=selected_theme["bg"])
     title_text.config(fg=selected_theme["work"], bg=selected_theme["bg"])
     start_button.config(highlightbackground=selected_theme["bg"])
+    pause_button.config(highlightbackground=selected_theme["bg"])
     reset_button.config(highlightbackground=selected_theme["bg"])
     check_mark.config(fg=selected_theme["work"], bg=selected_theme["bg"])
     color_change.config(highlightbackground=selected_theme["bg"])
@@ -67,6 +65,9 @@ def reset_timer():
 # ---------------------------- TIMER MECHANISMS ------------------------------- #
 
 def start_timer():
+    """Function first checks if a timer has already been started @ global var state.
+    Function also checks global var reps to determine length of timer.
+    This function recursively calls count_down()."""
     global reps, state
     reps += 1
 
@@ -126,8 +127,7 @@ def count_down(count):
             else:
                 if num_sessions % 3 == 0:
                     break_end()
-                    title_text.config(text="Last session before long break.\nYou got this!\nPress start when you're "
-                                           "ready.", fg=selected_theme["long"])
+                    title_text.config(text="Last session before long break.\nPress start when you're ready.", fg=selected_theme["long"])
                 elif num_sessions % 4 == 0:
                     title_text.config(text="Get a chance to rest?\nPress start when you're ready.", fg=selected_theme["long"])
                 else:
@@ -196,30 +196,31 @@ window.config(padx=100, pady=50, bg=selected_theme["bg"])
 
 # title_frame = tkinter.Frame(window, bg=selected_theme["bg"], height=10, width=50)
 title_text = Label(text="Timer", font=(FONT_NAME, 50), fg=selected_theme["work"], bg=selected_theme["bg"])
-title_text.grid(row=0, column=1, sticky=EW)
+title_text.grid(row=0, columnspan=3)
 
 # content_frame = tkinter.Frame(window)
 canvas = Canvas(width=200, height=224, bg=selected_theme["bg"], highlightthickness=0)
 tomato_pic = PhotoImage(file="pics/tomato.png")
-splat_pic = PhotoImage(file="pics/splat.png")
+splat_pic = PhotoImage(file="pics/Splat 250.png")
 tomato = canvas.create_image(100, 112, image=tomato_pic)
-timer_text = canvas.create_text(100, 130, text="00:00", fill="white", font=(FONT_NAME, 35, "bold"))
+timer_text = canvas.create_text(100, 130, text="00:00", fill="white", font=(FONT_NAME, 30, "bold"))
 canvas.grid(column=1, row=1)
 
 start_button = Button(text="Start", highlightbackground=selected_theme["bg"], command=start_timer)
 start_button.grid(column=0, row=2)
 
+pause_button = Button(text="Pause", highlightbackground=selected_theme["bg"], command=pause_timer)
+pause_button.grid(column=1, row=2)
+
 reset_button = Button(text="Reset", highlightbackground=selected_theme["bg"], command=reset_timer)
 reset_button.grid(column=2, row=2)
 
-pause_button = Button(text="Pause", highlightbackground=selected_theme["bg"], command=pause_timer)
-pause_button.grid(column=3, row=2)
 
 check_mark = Label(text="Sessions:", fg=selected_theme["work"], bg=selected_theme["bg"], font=(FONT_NAME, 18, "bold"))
-check_mark.grid(column=0, row=4)
+check_mark.grid(column=2, row=3)
 
 color_change = Button(text="Color Theme", highlightbackground=selected_theme["bg"], command=change_colors)
-color_change.grid(column=2, row=4)
+color_change.grid(column=0, row=3)
 
 
 window.mainloop()
