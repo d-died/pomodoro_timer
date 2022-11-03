@@ -10,35 +10,38 @@ import pygame
 FONT_NAME = "Courier"
 reps = 0
 timer = None
-color_options = [
+TIMER_LEFT = None
+WORK_SEC = 25 * 60
+SHORT_BREAK_SEC = 5 * 60
+LONG_BREAK_SEC = 30 * 60
+COLOR_OPTIONS = [
     {"default": {"bg": "#f7f5dd", "work": "#9bdeac", "short": "#e2979c", "long": "#e7305b"}},
     {"dark_mode": {"bg": "#3f3939", "work": "#bcbcbc", "short": "#74666d", "long": "#a4b885"}},
     {"d_faves": {"bg": "#601ba2", "work": "#35ea4D", "short": "#9fd329", "long": "#d9d2e9"}},
     {"desert": {"bg": "#d8a300", "work": "#ef8552", "short": "#6aa84f", "long": "#9fc5e8"}}
 ]
 
-default = color_options[0]["default"]
-dark_mode = color_options[1]["dark_mode"]
-d_faves = color_options[2]["d_faves"]
-desert = color_options[3]["desert"]
+default = COLOR_OPTIONS[0]["default"]
+dark_mode = COLOR_OPTIONS[1]["dark_mode"]
+d_faves = COLOR_OPTIONS[2]["d_faves"]
+desert = COLOR_OPTIONS[3]["desert"]
 selected_theme = {}
-color_mode = [default, dark_mode, d_faves, desert]
+COLOR_MODE = [default, dark_mode, d_faves, desert]
+state = False
 
-short_timer_settings = {"work": 0.5, "short": 0.5, "long": 0.5}
-long_timer_settings = {"work": 0.5, "short": 0.5, "long": 0.5}
 
 # ---------------------------- CHANGE COLOR THEME ------------------------------- #
 
-index = 0
+color_index = 0
 
 
 def change_colors():
-    global index, selected_theme
-    if index <= 2:
-        index += 1
+    global color_index, selected_theme
+    if color_index <= 2:
+        color_index += 1
     else:
-        index = 0
-    selected_theme = color_mode[index]
+        color_index = 0
+    selected_theme = COLOR_MODE[color_index]
     window.config(bg=selected_theme["bg"])
     canvas.config(bg=selected_theme["bg"])
     title_text.config(fg=selected_theme["work"], bg=selected_theme["bg"])
@@ -64,32 +67,42 @@ def reset_timer():
 # ---------------------------- TIMER MECHANISMS ------------------------------- #
 
 def start_timer():
-    global reps
-    work_sec = 25 * 60
-    short_break_sec = 5 * 60
-    long_break_sec = 30 * 60
+    global reps, state
     reps += 1
 
-    if reps % 8 == 0:
-        work_end()
-        title_text.config(text="Long Break", fg=selected_theme["long"])
-        canvas.itemconfig(tomato, image=splat_pic)
-        count_down(long_break_sec)
-    elif reps % 2 == 0:
-        work_end()
-        save_session_stamp()
-        title_text.config(text="Short Break", fg=selected_theme["short"])
-        canvas.itemconfig(tomato, image=splat_pic)
-        count_down(short_break_sec)
+    if state:
+        if reps % 8 == 0:
+            work_end()
+            title_text.config(text="Long Break", fg=selected_theme["long"])
+            canvas.itemconfig(tomato, image=splat_pic)
+            count_down(LONG_BREAK_SEC)
+        elif reps % 2 == 0:
+            work_end()
+            save_session_stamp()
+            title_text.config(text="Short Break", fg=selected_theme["short"])
+            canvas.itemconfig(tomato, image=splat_pic)
+            count_down(SHORT_BREAK_SEC)
     else:
+        state = True
+        if TIMER_LEFT is not None:
+            count_down(TIMER_LEFT)
+        else:
+            count_down(WORK_SEC)
         canvas.itemconfig(tomato, image=tomato_pic)
         title_text.config(text="Work, Bitch!", fg=selected_theme["work"], font=(FONT_NAME, 30, "bold"))
-        count_down(work_sec)
+
+
+def pause_timer():
+    global state
+    if state:
+        state = False
 
 
 # ---------------------------- COUNTDOWN MECHANISM ------------------------------- #
 
 def count_down(count):
+    global TIMER_LEFT
+    TIMER_LEFT = count
     count_min = math.floor(count / 60)
     if count_min < 10:
         count_min = f"0{count_min}"
@@ -98,29 +111,31 @@ def count_down(count):
         count_sec = f"0{count_sec}"
 
     canvas.itemconfig(timer_text, text=f"{count_min}:{count_sec}")
-    if count > 0:
-        global timer
-        timer = window.after(1000, count_down, count - 1)
-    else:
-        global reps
-        num_sessions = math.floor(reps / 2)
-        checkmark = "✓"
-        checks = ""
-        if reps % 2 != 0:
-            start_timer()
+    global state
+    if state:
+        if count > 0:
+            global timer
+            timer = window.after(1000, count_down, count - 1)
         else:
-            if num_sessions % 3 == 0:
-                break_end()
-                title_text.config(text="Last session before a long break.\nYou got this!\nPress start when you're "
-                                       "ready.", fg=selected_theme["long"])
-            elif num_sessions % 4 == 0:
-                title_text.config(text="Get back to it.\nPress start when you're ready.", fg=selected_theme["long"])
+            global reps
+            num_sessions = math.floor(reps / 2)
+            checkmark = "✓"
+            checks = ""
+            if reps % 2 != 0:
+                start_timer()
             else:
-                break_end()
-                title_text.config(text="Press start when you're ready.", fg=selected_theme["long"])
-        for n in range(num_sessions):
-            checks += checkmark
-            check_mark.config(text=f"Sessions:\n {checks}")
+                if num_sessions % 3 == 0:
+                    break_end()
+                    title_text.config(text="Last session before long break.\nYou got this!\nPress start when you're "
+                                           "ready.", fg=selected_theme["long"])
+                elif num_sessions % 4 == 0:
+                    title_text.config(text="Get a chance to rest?\nPress start when you're ready.", fg=selected_theme["long"])
+                else:
+                    break_end()
+                    title_text.config(text="Press start when you're ready.", fg=selected_theme["long"])
+            for n in range(num_sessions):
+                checks += checkmark
+                check_mark.config(text=f"Sessions:\n {checks}")
 
 
 # ---------------------------- SAVE SESSION DATA ------------------------------- #
@@ -197,16 +212,14 @@ start_button.grid(column=0, row=2)
 reset_button = Button(text="Reset", highlightbackground=selected_theme["bg"], command=reset_timer)
 reset_button.grid(column=2, row=2)
 
+pause_button = Button(text="Pause", highlightbackground=selected_theme["bg"], command=pause_timer)
+pause_button.grid(column=3, row=2)
+
 check_mark = Label(text="Sessions:", fg=selected_theme["work"], bg=selected_theme["bg"], font=(FONT_NAME, 18, "bold"))
 check_mark.grid(column=0, row=4)
 
 color_change = Button(text="Color Theme", highlightbackground=selected_theme["bg"], command=change_colors)
 color_change.grid(column=2, row=4)
 
-# short_timer = Button(text="25min Timer", highlightbackground=selected_theme["bg"], command=partial(start_timer, short_timer_settings))
-# short_timer.grid(column=0, row=4)
-
-# long_timer = Button(text="50min Timer", highlightbackground=selected_theme["bg"], command=partial(start_timer, long_timer_settings))
-# long_timer.grid(column=1, row=4)
 
 window.mainloop()
