@@ -11,8 +11,8 @@ reps = 0
 timer = None
 TIMER_LEFT = None
 WORK_SEC = 5
-SHORT_BREAK_SEC = 5 * 60
-LONG_BREAK_SEC = 30 * 60
+SHORT_BREAK_SEC = 5
+LONG_BREAK_SEC = 5
 COLOR_OPTIONS = [
     {"default": {"bg": "#f7f5dd", "work": "#9bdeac", "short": "#e2979c", "long": "#e7305b"}},
     {"dark_mode": {"bg": "#3f3939", "work": "#bcbcbc", "short": "#74666d", "long": "#a4b885"}},
@@ -53,36 +53,40 @@ def change_colors():
 
 
 def reset_timer():
-    global timer
-    global reps
+    global timer, reps, TIMER_LEFT
+    TIMER_LEFT = None
     reps = 0
-    title_text.config(text="Timer")
+    title_text.config(text="Timer", fg=selected_theme["work"])
     canvas.itemconfig(timer_text, text="00:00")
     canvas.itemconfig(tomato, image=tomato_pic)
     window.after_cancel(timer)
 
 
 # ---------------------------- TIMER MECHANISMS ------------------------------- #
+import time
+
 
 def start_timer():
     """Function first checks if a timer has already been started @ global var state.
     Function also checks global var reps to determine length of timer.
     This function recursively calls count_down()."""
-    global reps, state
+    global reps, state, TIMER_LEFT
     reps += 1
-
+    print(state)
     if state:
         if reps % 8 == 0:
             work_end()
             title_text.config(text="Long Break", fg=selected_theme["long"])
             canvas.itemconfig(tomato, image=splat_pic)
             count_down(LONG_BREAK_SEC)
+            time.sleep(LONG_BREAK_SEC)
         elif reps % 2 == 0:
             work_end()
             save_session_stamp()
             title_text.config(text="Short Break", fg=selected_theme["short"])
             canvas.itemconfig(tomato, image=splat_pic)
             count_down(SHORT_BREAK_SEC)
+
     else:
         state = True
         if TIMER_LEFT is not None:
@@ -125,11 +129,14 @@ def count_down(count):
             if reps % 2 != 0:
                 start_timer()
             else:
+                state = False
                 if num_sessions % 3 == 0:
                     break_end()
-                    title_text.config(text="Last session before long break.\nPress start when you're ready.", fg=selected_theme["long"])
+                    title_text.config(text="Last session before long break.\nPress start when you're ready.",
+                                      fg=selected_theme["long"])
                 elif num_sessions % 4 == 0:
-                    title_text.config(text="Get a chance to rest?\nPress start when you're ready.", fg=selected_theme["long"])
+                    title_text.config(text="Have a nice break?\nPress start when you're ready.",
+                                      fg=selected_theme["long"])
                 else:
                     break_end()
                     title_text.config(text="Press start when you're ready.", fg=selected_theme["long"])
@@ -174,15 +181,21 @@ def save_session_stamp():
 # ---------------------------- SOUNDS FUNCTIONS------------------------------- #
 pygame.mixer.init()
 
+
 def break_end():
+    global TIMER_LEFT
+    TIMER_LEFT = None
     train_station = pygame.mixer.Sound(file="sounds/train_station.wav")
-    train_station.play(loops=1)
+    train_station.play(loops=1).fadeout(12500)
+
 
 def work_end():
+    global TIMER_LEFT
+    TIMER_LEFT = None
     gong_one = pygame.mixer.Sound(file="sounds/low a gong.wav")
     gong_two = pygame.mixer.Sound(file="sounds/low gong.wav")
-    gong_one.play(loops=2)
-    gong_two.play(loops=1)
+    gong_one.play(loops=2).fadeout(12000)
+    gong_two.play(loops=1).fadeout(12000)
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -215,12 +228,10 @@ pause_button.grid(column=1, row=2)
 reset_button = Button(text="Reset", highlightbackground=selected_theme["bg"], command=reset_timer)
 reset_button.grid(column=2, row=2)
 
-
 check_mark = Label(text="Sessions:", fg=selected_theme["work"], bg=selected_theme["bg"], font=(FONT_NAME, 18, "bold"))
 check_mark.grid(column=2, row=3)
 
 color_change = Button(text="Color Theme", highlightbackground=selected_theme["bg"], command=change_colors)
 color_change.grid(column=0, row=3)
-
 
 window.mainloop()
