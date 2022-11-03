@@ -63,7 +63,6 @@ def reset_timer():
 
 
 # ---------------------------- TIMER MECHANISMS ------------------------------- #
-import time
 
 
 def start_timer():
@@ -72,26 +71,23 @@ def start_timer():
     This function recursively calls count_down()."""
     global reps, state, TIMER_LEFT
     reps += 1
-    print(state)
     if state:
         if reps % 8 == 0:
             work_end()
             title_text.config(text="Long Break", fg=selected_theme["long"])
-            canvas.itemconfig(tomato, image=splat_pic)
             count_down(LONG_BREAK_SEC)
-            time.sleep(LONG_BREAK_SEC)
         elif reps % 2 == 0:
-            work_end()
-            save_session_stamp()
             title_text.config(text="Short Break", fg=selected_theme["short"])
-            canvas.itemconfig(tomato, image=splat_pic)
             count_down(SHORT_BREAK_SEC)
+        work_end()
+        canvas.itemconfig(tomato, image=splat_pic)
 
     else:
         state = True
         if TIMER_LEFT is not None:
             count_down(TIMER_LEFT)
         else:
+            work_start()
             count_down(WORK_SEC)
         canvas.itemconfig(tomato, image=tomato_pic)
         title_text.config(text="Work, Bitch!", fg=selected_theme["work"], font=(FONT_NAME, 30, "bold"))
@@ -106,6 +102,8 @@ def pause_timer():
 # ---------------------------- COUNTDOWN MECHANISM ------------------------------- #
 
 def count_down(count):
+    """Conditionally determines the amount of seconds the timer will count down from.
+    Also calls save_session_stamp(), end of break sound, and counts sessions for checkmarks"""
     global TIMER_LEFT
     TIMER_LEFT = count
     count_min = math.floor(count / 60)
@@ -127,18 +125,19 @@ def count_down(count):
             checkmark = "✓"
             checks = ""
             if reps % 2 != 0:
+                save_session_stamp()
                 start_timer()
             else:
                 state = False
+                TIMER_LEFT = None
+                break_end()
                 if num_sessions % 3 == 0:
-                    break_end()
                     title_text.config(text="Last session before long break.\nPress start when you're ready.",
                                       fg=selected_theme["long"])
                 elif num_sessions % 4 == 0:
                     title_text.config(text="Have a nice break?\nPress start when you're ready.",
                                       fg=selected_theme["long"])
                 else:
-                    break_end()
                     title_text.config(text="Press start when you're ready.", fg=selected_theme["long"])
             for n in range(num_sessions):
                 checks += checkmark
@@ -181,22 +180,23 @@ def save_session_stamp():
 # ---------------------------- SOUNDS FUNCTIONS------------------------------- #
 pygame.mixer.init()
 
-
-def break_end():
-    global TIMER_LEFT
-    TIMER_LEFT = None
-    train_station = pygame.mixer.Sound(file="sounds/train_station.wav")
-    train_station.play(loops=1).fadeout(12500)
+def work_start():
+    bowl_strike = pygame.mixer.Sound(file="sounds/bowl_strike.wav")
+    bowl_strike.play().fadeout(2000)
 
 
 def work_end():
-    global TIMER_LEFT
-    TIMER_LEFT = None
-    gong_one = pygame.mixer.Sound(file="sounds/low a gong.wav")
-    gong_two = pygame.mixer.Sound(file="sounds/low gong.wav")
-    gong_one.play(loops=2).fadeout(12000)
-    gong_two.play(loops=1).fadeout(12000)
+    # gong_one = pygame.mixer.Sound(file="sounds/low a gong.wav")
+    # gong_two = pygame.mixer.Sound(file="sounds/low gong.wav")
+    # gong_one.play(loops=2).fadeout(12000)
+    # gong_two.play(loops=1).fadeout(12000)
+    clock_sound = pygame.mixer.Sound(file="sounds/clock.aiff")
+    clock_sound.play().fadeout(11000)
 
+
+def break_end():
+    train_station = pygame.mixer.Sound(file="sounds/train_station.wav")
+    train_station.play(loops=1).fadeout(12500)
 
 # ---------------------------- UI SETUP ------------------------------- #
 
