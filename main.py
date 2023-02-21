@@ -164,13 +164,29 @@ def check_total_time():
         messagebox.showinfo(title="Error", message="You have not logged any hours yet!")
 
     else:
-        sessions = []
+        # TOTAL & MONTHLY SESSIONS
+        total_sessions = []
+        date = datetime.now()
+        this_month = date.strftime("%y-%m")
+        month_sessions = []
         for entry in data:
             num_sessions_day = len(data[entry])
-            sessions.append(num_sessions_day)
-        total_mins_worked = sum(sessions) * 30
-        hours_worked = int(total_mins_worked / 60)
-        messagebox.showinfo(title="Total Sessions", message=f"You have studied for {hours_worked} hours since you started. Look at you go, sweetie!")
+            total_sessions.append(num_sessions_day)
+
+            entry_month = entry[:-3]
+            if this_month == entry_month:
+                num_sessions_day = len(data[entry])
+                month_sessions.append(num_sessions_day)
+
+        total_mins_worked = sum(total_sessions) * 30
+        total_hours_worked = total_mins_worked / 60
+        this_month_mins = sum(month_sessions) * 30
+        total_month_mins = this_month_mins / 60
+
+
+    messagebox.showinfo(title="Total Sessions", message=f"You have studied for {total_hours_worked} hours since you started, "
+                                                        f"and {total_month_mins} hours this month. \n "
+                                                        f"Look at you go, sweetie!")
 
 
 
