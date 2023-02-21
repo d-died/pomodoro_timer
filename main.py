@@ -1,5 +1,6 @@
 import tkinter
 from tkinter import *
+from tkinter import messagebox
 import math
 import json
 from datetime import datetime
@@ -152,16 +153,35 @@ def save_session_stamp():
         with open("venv/study_data.json", "w") as study_data_file:
             json.dump(data, study_data_file, indent=4)
 
+
 # ---------------------------- CHECK TOTAL TIMES ------------------------------- #
 def check_total_time():
-    print("Hi!")
+    try:
+        with open("venv/study_data.json", "r") as file:
+            data = json.load(file)
+
+    except FileNotFoundError:
+        messagebox.showinfo(title="Error", message="You have not logged any hours yet!")
+
+    else:
+        sessions = []
+        for entry in data:
+            num_sessions_day = len(data[entry])
+            sessions.append(num_sessions_day)
+        total_mins_worked = sum(sessions) * 30
+        hours_worked = int(total_mins_worked / 60)
+        messagebox.showinfo(title="Total Sessions", message=f"You have studied for {hours_worked} hours since you started. Look at you go, sweetie!")
+
+
 
 # ---------------------------- SOUNDS FUNCTIONS------------------------------- #
 pygame.mixer.init()
 
+
 def break_end():
     train_station = pygame.mixer.Sound(file="sounds/train_station.wav")
     train_station.play(loops=1)
+
 
 def work_end():
     gong_one = pygame.mixer.Sound(file="sounds/low a gong.wav")
