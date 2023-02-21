@@ -64,9 +64,9 @@ def reset_timer():
 
 def start_timer():
     global reps
-    work_sec = 15
-    short_break_sec = 15
-    long_break_sec = 5
+    work_sec = 25 * 60
+    short_break_sec = 5 * 60
+    long_break_sec = 30 * 60
     reps += 1
 
     if reps % 8 == 0:
@@ -152,6 +152,9 @@ def save_session_stamp():
         with open("venv/study_data.json", "w") as study_data_file:
             json.dump(data, study_data_file, indent=4)
 
+# ---------------------------- CHECK TOTAL TIMES ------------------------------- #
+def check_total_time():
+    print("Hi!")
 
 # ---------------------------- SOUNDS FUNCTIONS------------------------------- #
 pygame.mixer.init()
@@ -199,6 +202,9 @@ check_mark.grid(column=0, row=4)
 
 color_change = Button(text="Color Theme", highlightbackground=selected_theme["bg"], command=change_colors)
 color_change.grid(column=2, row=4)
+
+total_time = Button(text="Check Hours Logged", highlightbackground=selected_theme["bg"], command=check_total_time)
+total_time.grid(column=1, row=5)
 
 # short_timer = Button(text="25min Timer", highlightbackground=selected_theme["bg"], command=partial(start_timer, short_timer_settings))
 # short_timer.grid(column=0, row=4)
